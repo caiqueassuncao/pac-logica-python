@@ -6,14 +6,22 @@ from .database import Database, Level, clean_name, MAX_NAME
 from .effects import Effects
 from .entities import Entity, Fruit
 from .fonts import FontBook
+from .layout import Layout, default_aspect
 from .questions import make_question, TOPIC_NAMES
 from .maze import free, create_dots, random_free_cell
 from .input import direction_for_key, answer_for_key, CONFIRM_KEYS, PAUSE_KEYS
 from .renderer import RendererMixin
 from .scoring import Scoreboard, random_fruit, plural
 
-def create_window():
-    size = (SCREEN_W, SCREEN_H)
+CAPTION = "Pac-Lógica — Lógica Proposicional"
+
+def create_window(size, recreate=False):
+    if recreate:
+        # Trocar o tamanho de uma janela SCALED existente derruba o pygame-ce;
+        # recriar o subsistema de vídeo é seguro.
+        pygame.display.quit()
+        pygame.display.init()
+    pygame.display.set_caption(CAPTION)
     try:
         # SCALED deixa a janela redimensionável e nítida em telas HiDPI (Retina, 4K).
         return pygame.display.set_mode(size, pygame.SCALED | pygame.RESIZABLE)
@@ -33,12 +41,14 @@ def topic_names(level):
 
 class PacLogica(RendererMixin):
     def __init__(self, db=None):
-        pygame.init()
-        pygame.display.set_caption("Pac-Lógica — Lógica Proposicional")
-        self.screen = create_window()
+        # Só vídeo e fontes: o jogo não usa som nem joystick, que deixam a abertura lenta.
+        pygame.display.init()
+        pygame.font.init()
+        self.db = db or Database()
+        self.layout = Layout(self.db.get_setting("aspect") or default_aspect())
+        self.screen = create_window(self.layout.size)
         self.clock = pygame.time.Clock()
         self.fonts = FontBook()
-        self.db = db or Database()
         self.player_name = self.db.get_setting("player_name", "")
         self.effects = Effects()
         self.buttons = []
@@ -251,6 +261,20 @@ class PacLogica(RendererMixin):
                 else: self.reset_positions()
                 return
 
+    # Tela
+    def set_aspect(self, aspect):
+        if aspect == self.layout.aspect: return
+        self.layout = Layout(aspect)
+        self.db.set_setting("aspect", self.layout.aspect)
+        self.screen = create_window(self.layout.size, recreate=True)
+        self.prerender()
+
+    def toggle_fullscreen(self):
+        try:
+            pygame.display.toggle_fullscreen()
+        except pygame.error:
+            pass
+
     # Entrada
     def do(self, action):
         if action in ("classic", "arcade"): self.new_game(action)
@@ -264,10 +288,13 @@ class PacLogica(RendererMixin):
         elif action == "continue": self.continue_after_feedback()
         elif isinstance(action, tuple) and action[0] == "answer": self.answer(action[1])
         elif isinstance(action, tuple) and action[0] == "tab": self.ranking_mode = action[1]
+        elif isinstance(action, tuple) and action[0] == "aspect": self.set_aspect(action[1])
 
     def on_key(self, event):
         key, state = event.key, self.state
-        if state == "play":
+        if key == pygame.K_F11:
+            self.toggle_fullscreen()
+        elif state == "play":
             direction = direction_for_key(key)
             if direction: self.want = direction
             elif key in PAUSE_KEYS: self.do("pause")

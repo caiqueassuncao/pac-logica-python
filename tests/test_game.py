@@ -42,6 +42,21 @@ class GameTest(unittest.TestCase):
             g.state = state
             g.draw()
 
+    def test_both_aspects_render_and_switch(self):
+        g = self.game
+        other = "4:3" if g.layout.aspect == "16:9" else "16:9"
+        for aspect in (other, g.layout.aspect, other):
+            g.do(("aspect", aspect))
+            self.assertEqual(g.screen.get_size(), g.layout.size)
+            self.assertEqual(g.db.get_setting("aspect"), aspect)
+            self.assertTrue(g.screen.get_rect().contains(g.layout.world))
+            self.assertTrue(g.screen.get_rect().contains(g.layout.hud))
+            self.assertFalse(g.layout.world.colliderect(g.layout.hud))
+            g.state = "menu"; g.draw()
+            g.new_game("classic")
+            g.draw()
+            g.ask("eat"); g.draw()
+
     def test_reaching_goal_levels_up(self):
         g = self.game
         g.new_game("classic")

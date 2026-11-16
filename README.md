@@ -25,7 +25,10 @@ No Debian/Ubuntu, se o `venv` não existir: `sudo apt install python3-venv`.
 Também é possível executar com `python -m paclogica`.
 
 ## Como jogar
-- Setas ou WASD: movimentar o Pac-Man. ESC ou P: pausar.
+- Setas ou WASD: movimentar o Pac-Man. ESC ou P: pausar. F11: tela cheia.
+- No menu, escolha a proporção da tela: **4:3** (HUD embaixo) ou **16:9** (labirinto maior e
+  painel lateral). A escolha fica salva; na primeira execução o jogo usa a do seu monitor.
+  A janela pode ser redimensionada à vontade.
 - Cada docinho traz uma questão de lógica, com 15 segundos para responder.
   Responda clicando ou com as teclas 1 a 4.
 - Errar, deixar o tempo acabar ou ser pego por um fantasma custa 1 coração. Há uma chance de reviver.
@@ -85,7 +88,7 @@ Tabelas:
   É preenchida na primeira execução e pode ser editada para ajustar ou criar níveis.
 - `scores`: histórico de partidas, usado no ranking de cada modo.
 - `players`: melhor nível alcançado e número de partidas de cada jogador.
-- `settings`: preferências, como o último nome digitado.
+- `settings`: preferências, como o último nome digitado e a proporção da tela.
 
 ## Testes
 ```bash
@@ -106,6 +109,7 @@ pac-logica-python/
     ├── fonts.py        # escolha de fontes com suporte aos símbolos lógicos
     ├── game.py         # estados, modos de jogo, colisões e loop principal
     ├── input.py        # comandos do teclado
+    ├── layout.py       # posição do labirinto e do HUD em 4:3 e 16:9
     ├── logic.py        # fórmulas, tabelas-verdade e perguntas
     ├── maze.py         # caminhos e distribuição dos docinhos
     ├── questions.py    # banco de questões por tipo

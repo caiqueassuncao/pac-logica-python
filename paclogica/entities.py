@@ -21,3 +21,11 @@ class Entity:
         return ((self.pc + (self.c-self.pc)*t + .5)*TILE,
                 (self.pr + (self.r-self.pr)*t + .5)*TILE)
 
+@dataclass
+class Fruit:
+    kind: object
+    cell: tuple
+    left: int
+
+    def pixel(self):
+        return ((self.cell[1] + .5)*TILE, (self.cell[0] + .5)*TILE)

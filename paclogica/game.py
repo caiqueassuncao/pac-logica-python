@@ -12,6 +12,7 @@ from .maze import free, create_dots, random_free_cell
 from .input import direction_for_key, answer_for_key, CONFIRM_KEYS, PAUSE_KEYS
 from .renderer import RendererMixin
 from .scoring import Scoreboard, random_fruit, plural
+from .audio import AudioManager
 
 CAPTION = "Pac-Lógica — Lógica Proposicional"
 
@@ -49,6 +50,7 @@ class PacLogica(RendererMixin):
         self.screen = create_window(self.layout.size)
         self.clock = pygame.time.Clock()
         self.fonts = FontBook()
+        self.audio = AudioManager()
         self.player_name = self.db.get_setting("player_name", "")
         self.effects = Effects()
         self.buttons = []
@@ -68,6 +70,7 @@ class PacLogica(RendererMixin):
         self.hearts, self.revived = HEARTS, False
         self.level_no = 1
         self.last_score_id = self.last_rank = None
+        self.audio.play("start")
         self.start_level()
 
     def start_level(self):
@@ -133,6 +136,7 @@ class PacLogica(RendererMixin):
         self.timed_out = index is None
         ok = index == q["answer"]
         self.feedback = ok
+        self.audio.play("correct" if ok else "wrong")
         if self.quiz_mode == "eat":
             if ok:
                 self.last_points = self.score.correct_answer()
@@ -147,6 +151,7 @@ class PacLogica(RendererMixin):
         if mode == "eat":
             if not ok:
                 self.hearts -= 1
+                self.audio.play("damage")
                 if self.hearts <= 0:
                     self.lose()
                     return
@@ -169,6 +174,7 @@ class PacLogica(RendererMixin):
     def finish(self, victory=False):
         self.last_score_id, self.last_rank = self.db.save_score(
             self.player_name, self.mode, self.score.score, self.level_no)
+        self.audio.play("victory" if victory else "game_over")
         self.ranking_mode = self.mode
         self.state = "victory" if victory else "over"
 
@@ -187,6 +193,7 @@ class PacLogica(RendererMixin):
             if self.state != "play": return
         if cell in self.dots:
             color = self.dots.pop(cell)
+            self.audio.play("collect")
             self.eaten += 1
             self.effects.burst((c + .5) * TILE, (r + .5) * TILE, color, 10)
             self.ask("eat")
@@ -254,6 +261,7 @@ class PacLogica(RendererMixin):
         for ghost in self.ghosts:
             gx,gy = ghost.pixel()
             if math.hypot(px-gx,py-gy) < TILE*.6:
+                self.audio.play("damage")
                 self.hearts -= 1
                 self.score.streak = 0
                 self.effects.burst(px, py, RED, 18)

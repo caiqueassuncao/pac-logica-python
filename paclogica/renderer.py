@@ -697,7 +697,9 @@ class RendererMixin:
         self.text(q["prompt"], (cx, top + 146), 21, WHITE, anchor="center")
         bottom = self.question_box(q["lines"], top + 168)
         self.draw_options(q["options"], bottom + 24)
-        self.text("Clique na resposta ou use as teclas 1 a 4", (cx, bottom + 24 + opts_h + 34), 14,
+        n = len(q["options"])
+        keys = "as teclas 1 ou 2" if n == 2 else f"as teclas 1 a {n}"
+        self.text(f"Clique na resposta ou use {keys}", (cx, bottom + 24 + opts_h + 34), 14,
                   darken(MUTED, .15), anchor="center")
 
     def truth_table(self, headers, rows, top, n_inputs):

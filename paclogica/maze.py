@@ -1,14 +1,33 @@
-from .config import ROWS, COLS, MAP, PLAYER_START, GHOST_STARTS, CANDY_COLORS
+from .config import CANDY_COLORS
+from .maps import MAPS
 import random
 
+# Mapa em uso. O jogo troca chamando set_map() ao iniciar cada nível.
+_current = MAPS[0]
+
+def set_map(game_map):
+    global _current
+    _current = game_map
+
+def current_map():
+    return _current
+
+def player_start():
+    return _current.player_start
+
+def ghost_starts():
+    return _current.ghost_starts
+
 def free(row, col):
-    return 0 <= row < ROWS and 0 <= col < COLS and MAP[row][col] == "."
+    grid = _current.grid
+    return 0 <= row < len(grid) and 0 <= col < len(grid[0]) and grid[row][col] == "."
 
 def free_cells():
-    return [(r,c) for r in range(ROWS) for c in range(COLS) if free(r,c)]
+    grid = _current.grid
+    return [(r,c) for r in range(len(grid)) for c in range(len(grid[0])) if free(r,c)]
 
 def create_dots(count, excluded=()):
-    excluded = {PLAYER_START} | {(r,c) for r,c,_ in GHOST_STARTS} | set(excluded)
+    excluded = {_current.player_start} | {(r,c) for r,c,_ in _current.ghost_starts} | set(excluded)
     cells = [cell for cell in free_cells() if cell not in excluded]
     random.shuffle(cells)
     return {cell: random.choice(CANDY_COLORS) for cell in cells[:count]}

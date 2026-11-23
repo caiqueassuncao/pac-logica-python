@@ -8,7 +8,8 @@ from .entities import Entity, Fruit
 from .fonts import FontBook
 from .layout import Layout, default_aspect
 from .questions import make_question, TOPIC_NAMES
-from .maze import free, create_dots, random_free_cell
+from .maze import free, create_dots, random_free_cell, set_map, player_start, ghost_starts
+from .maps import map_for_level
 from .input import direction_for_key, answer_for_key, CONFIRM_KEYS, PAUSE_KEYS
 from .renderer import RendererMixin
 from .scoring import Scoreboard, random_fruit, plural
@@ -81,6 +82,10 @@ class PacLogica(RendererMixin):
             # O arcade segue a mesma escala de questões dos níveis, sem metas.
             scale = self.db.level(min(self.level_no, self.db.level_count()))
             self.level = arcade_level(self.level_no, scale.topics)
+        # Cada nível (ou onda) usa um mapa diferente; veja paclogica/maps.py.
+        self.map = map_for_level(self.level_no)
+        set_map(self.map)
+        self.maze_surface = self.make_maze()
         self.dots = create_dots(self.level.dots)
         self.eaten = 0
         self.fruit, self.fruit_timer = None, self.level.fruit_every
@@ -89,13 +94,14 @@ class PacLogica(RendererMixin):
         self.reset_positions()
         self.inv = 1200
         title = f"NÍVEL {self.level_no}" if self.mode == "classic" else f"ONDA {self.level_no}"
+        title += f" · {self.map.name.upper()}"
         self.effects.announce(title, YELLOW, sub=topic_names(self.level))
         self.state = "play"
 
     def reset_positions(self):
-        self.player = Entity(*PLAYER_START, PLAYER_STEP)
+        self.player = Entity(*player_start(), PLAYER_STEP)
         self.ghosts = [Entity(r,c,self.level.ghost_step,color=col)
-                       for r,c,col in GHOST_STARTS[:self.level.ghosts]]
+                       for r,c,col in ghost_starts()[:self.level.ghosts]]
         self.want = (0,0)
         self.inv = INVULN_MS
 

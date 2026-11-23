@@ -5,6 +5,7 @@ import pygame
 from .config import *
 from .questions import TOPIC_NAMES
 from .scoring import FRUITS, plural
+from .maze import current_map
 
 def mix(a, b, t):
     return tuple(int(a[i] + (b[i]-a[i])*t) for i in range(3))
@@ -66,6 +67,7 @@ class RendererMixin:
 
     def make_maze(self):
         T, k = self.layout.tile, self.k
+        grid = current_map().grid
         size = (COLS*T, ROWS*T)
         surf = pygame.Surface(size, pygame.SRCALPHA)
         lines = pygame.Surface(size, pygame.SRCALPHA)
@@ -82,11 +84,11 @@ class RendererMixin:
         for r in range(1, ROWS-1):
             c = 1
             while c < COLS-1:
-                if MAP[r][c] != "#":
+                if grid[r][c] != "#":
                     c += 1
                     continue
                 start = c
-                while c < COLS-1 and MAP[r][c] == "#": c += 1
+                while c < COLS-1 and grid[r][c] == "#": c += 1
                 rect = pygame.Rect(start*T + .14*T, r*T + .17*T, (c-start)*T - .28*T, T - .34*T)
                 pygame.draw.rect(surf, (*lighten(WALL_FILL, .04), 255), rect, border_radius=int(.3*T))
                 pygame.draw.rect(lines, (*NEON, 230), rect, 2, border_radius=int(.3*T))
@@ -695,7 +697,9 @@ class RendererMixin:
         self.text(q["prompt"], (cx, top + 146), 21, WHITE, anchor="center")
         bottom = self.question_box(q["lines"], top + 168)
         self.draw_options(q["options"], bottom + 24)
-        self.text("Clique na resposta ou use as teclas 1 a 4", (cx, bottom + 24 + opts_h + 34), 14,
+        n = len(q["options"])
+        keys = "as teclas 1 ou 2" if n == 2 else f"as teclas 1 a {n}"
+        self.text(f"Clique na resposta ou use {keys}", (cx, bottom + 24 + opts_h + 34), 14,
                   darken(MUTED, .15), anchor="center")
 
     def truth_table(self, headers, rows, top, n_inputs):

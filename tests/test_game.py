@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest.mock import patch
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
@@ -41,6 +42,18 @@ class GameTest(unittest.TestCase):
                 if state == "feedback": g.answer(g.question["answer"])
             g.state = state
             g.draw()
+
+    def test_text_input_is_active_only_in_menu(self):
+        g = self.game
+        with patch("pygame.key.start_text_input") as start, patch("pygame.key.stop_text_input") as stop:
+            g.handle_events()
+            start.assert_called_once_with()
+            self.assertTrue(g._text_input_active)
+
+            g.state = "play"
+            g.handle_events()
+            stop.assert_called_once_with()
+            self.assertFalse(g._text_input_active)
 
     def test_both_aspects_render_and_switch(self):
         g = self.game

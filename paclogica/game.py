@@ -58,6 +58,7 @@ class PacLogica(RendererMixin):
         self.last_score_id = self.last_rank = None
         self.mode = None
         self.running = True
+        self._text_input_active = False
         self.prerender()
         self.state = "menu"
 
@@ -331,6 +332,13 @@ class PacLogica(RendererMixin):
             self.player_name = (self.player_name + text)[:MAX_NAME]
 
     def handle_events(self):
+        text_input_active = self.state == "menu"
+        if text_input_active != self._text_input_active:
+            if text_input_active:
+                pygame.key.start_text_input()
+            else:
+                pygame.key.stop_text_input()
+            self._text_input_active = text_input_active
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
             elif event.type == pygame.KEYDOWN: self.on_key(event)

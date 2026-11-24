@@ -55,6 +55,14 @@ class GameTest(unittest.TestCase):
             stop.assert_called_once_with()
             self.assertFalse(g._text_input_active)
 
+    def test_menu_shows_games_played_in_player_stats(self):
+        g = self.game
+        g.db.save_score("Teste", "classic", 120, 2)
+        g.db.save_score("Teste", "arcade", 250, 3)
+        with patch.object(g, "text", wraps=g.text) as draw_text:
+            g.draw_menu()
+        self.assertTrue(any("Partidas: 2" in str(call.args[0]) for call in draw_text.call_args_list))
+
     def test_both_aspects_render_and_switch(self):
         g = self.game
         other = "4:3" if g.layout.aspect == "16:9" else "16:9"

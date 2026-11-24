@@ -528,7 +528,8 @@ class RendererMixin:
             pygame.draw.line(self.screen, YELLOW, (caret_x, box.y+12), (caret_x, box.bottom-12), 2)
         stats = self.player_stats()
         if stats and stats["games"]:
-            info = (f"Melhor nível: {stats['best_level'] or '-'} · Recorde tradicional: {thousands(stats['best_classic'])}"
+            info = (f"Partidas: {stats['games']} · Melhor nível tradicional: {stats['best_level'] or '-'}"
+                    f" · Recorde tradicional: {thousands(stats['best_classic'])}"
                     f" · Recorde arcade: {thousands(stats['best_arcade'])}")
         else:
             info = "Digite seu nome e escolha um modo de jogo"
